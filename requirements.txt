@@ -1,0 +1,1 @@
+alphaquick[pandas] @ git+https://github.com/alphaquick/alphaquick-python@v0.1.0

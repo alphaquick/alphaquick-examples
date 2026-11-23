@@ -1,0 +1,8 @@
+{
+  "name": "alphaquick-live-feed-example",
+  "private": true,
+  "type": "module",
+  "description": "Stream one book from the AlphaQuick relay and keep it up to date.",
+  "scripts": { "start": "node feed.mjs" },
+  "dependencies": { "ws": "^8.18.0" }
+}

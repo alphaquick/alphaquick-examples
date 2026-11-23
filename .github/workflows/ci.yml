@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"  # weekly: the examples must keep working with the package and the samples
+
+permissions:
+  contents: read
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements.txt -r live/requirements.txt
+      # The free samples, fetched once and kept in the Actions cache:
+      # alphaquick.io allows 30 sample downloads an hour per address.
+      - uses: actions/cache@v4
+        with:
+          path: samples-cache
+          key: samples-v1-${{ hashFiles('requirements.txt') }}
+      - name: Every example, on its default sample
+        env:
+          ALPHAQUICK_CACHE: samples-cache
+        run: |
+          set -e
+          for script in l2/bars.py l2/book_at.py l2/continuity.py orderlog/book_at.py orderlog/queue_position.py \
+                        orderlog/follow_account.py orderlog/maker_taker.py orderlog/order_lifetimes.py orderlog/hip4_outcome.py; do
+            echo "::group::$script"
+            python "$script"
+            echo "::endgroup::"
+          done
+          python l2/bars.py --every 1min -o bars-1min.parquet
+          python orderlog/book_at.py --at 00:29:59 --levels 3 --queue 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+        working-directory: live
+      - name: Live clients against the stand-in relay
+        run: PYTHON=python bash tests/check_live.sh

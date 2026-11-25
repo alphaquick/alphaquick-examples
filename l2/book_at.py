@@ -10,7 +10,7 @@ from datetime import datetime, time, timezone
 from pathlib import Path
 
 import alphaquick as aq
-from alphaquick import l2, samples
+from alphaquick import l2, names, samples
 
 
 def main() -> None:
@@ -21,11 +21,14 @@ def main() -> None:
     args = parser.parse_args()
     path = Path(args.file) if args.file else samples.fetch("l2-btc-hyperliquid", quiet=False)
 
-    # The file's day: from its first record (its name says it too).
+    # The file's day comes from its name: a file holds what was received during
+    # its UTC day, so its first records can carry a time of the day before.
     first = next(iter(aq.read_l2(path)), None)
     if first is None:
         raise SystemExit(f"{path.name} holds no L2 records")
-    moment = datetime.combine(first.datetime.date(), time.fromisoformat(args.at), timezone.utc)
+    parsed = names.parse_l2_name(path)
+    day = datetime.strptime(parsed.day, "%Y%m%d").date() if parsed else first.datetime.date()
+    moment = datetime.combine(day, time.fromisoformat(args.at), timezone.utc)
 
     book = l2.book_at(path, aq.datetime_to_ticks(moment))
     bids, asks = book.depth(args.levels)

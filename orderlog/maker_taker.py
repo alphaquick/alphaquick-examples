@@ -23,6 +23,10 @@ def main() -> None:
     trades = frames.orderlog_trades(path)
     if trades.empty:
         raise SystemExit(f"{path.name} holds no order-log trades (is it an order-log file?)")
+    # System prints (settlements, HIP-4 mints and merges, vault nettings) have no
+    # book match; leave them out, as the exchange's own candles do.
+    if "system_print" in trades:
+        trades = trades[~trades["system_print"]].copy()
     trades["notional"] = trades["price"] * trades["size"]
     table = pd.DataFrame({
         "as_maker": trades.groupby("maker")["notional"].sum(),

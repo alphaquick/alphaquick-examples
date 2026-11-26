@@ -90,9 +90,14 @@ download them with the script it gives you (see
 file to any script:
 
 ```bash
-python orderlog/maker_taker.py data/20261101/BTC_HLC_20261101.bin.lz4
+python orderlog/maker_taker.py data/20261101/PERPS/BTC_HLC_20261101.bin.lz4
 python l2/bars.py data/20261101/BTCUSDT_BINANCE_USDM_20261101.bin.lz4 --every 5s
 ```
+
+Order-log files come in a folder per kind of market in each day: `PERPS/`
+(`BTC_HLC_…`), `HIP3/` (`xyz_CL_HLC_…` for `xyz:CL`), `SPOT/` (`HYPE_USDC_HLC_…`,
+Hyperliquid's `@107`) and `HIP4/` (`<title>_id<outcome id>_HLC_…`). The
+order-log scripts read what a file is from its META record, not from its name.
 
 ## More
 
